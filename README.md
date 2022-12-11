@@ -1,6 +1,6 @@
 # Fantasy Basketball Rankings
-## Author: Caleb Tsai
-## Created: 12/11/2022
+### Author: Caleb Tsai
+### Created: 12/11/2022
 
 ### Purpose:
 - To display and rank Fantasy players for future drafts
