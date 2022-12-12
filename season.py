@@ -10,7 +10,7 @@ class Season:
         self.season = season
         self.ranks = pd.read_csv(season+'.csv').drop(columns=['Round', 'Inj'])
 
-    def initialize(self, ranks, season):
+    def initialize(self, ranks):
         # Round every appropriate statistic to appropriate decimal points
         # Average Stats: m/g, p/g, 3/g, r/g, a/g, s/g, b/g, fg%, fga/g, ft%, fta/g, to/g
         ranks['m/g'] = ranks['m/g'].round(decimals=1)
@@ -36,16 +36,30 @@ class Season:
         ranks['fg%V'] = ranks['fg%V'].round(decimals=2)
         ranks['ft%V'] = ranks['ft%V'].round(decimals=2)
         ranks['toV'] = ranks['toV'].round(decimals=2)
-
-    # Print out top x ranked players
-    def displayTop(self, ranks, num, season):
-        top = ranks.head(num)
+    #----------------------------------------------------------------------------------------------------------------------
+    # Print out top x ranked players overall
+    def displayTopOverall(self, ranks, num, season):
+        top = ranks.head(num).drop(columns=['pV', '3V', 'rV', 'aV', 'sV', 'bV', 'fg%V', 'ft%V', 'toV'])
 
         # Print dataframe (markdown, plain-text, psql, github, pretty, HTML), export to 'out.csv' file
         print(f'\nTop Players Overall in the 20{season} season')
         print(tabulate(top, headers='keys', tablefmt='pretty'))
         top.to_csv('out.csv', sep=',')
 
+    #----------------------------------------------------------------------------------------------------------------------
+    def displayTopKeepCats(self, ranks, num, season, cats, code):
+        # Heading of output
+        chosen = ''
+        if len(cats) == 1:
+            print(f'\nTop Players Given {len(cats)} Category ({code[cats[0]]}) in the 20{season} season:')
+        else:
+            chosen += (f'{code[cats[0]]}')
+            for cat in cats[1:]:
+                chosen += (f', {code[cat]}')
+            print(f'\nTop Players Given {len(cats)} Categories ({chosen}) in the 20{season} season:')
+
+
+    #----------------------------------------------------------------------------------------------------------------------
     # Print out season averages across all 9 categories for current season
     def displaySeasonAvgs(self, ranks, season):
         # Calculate Category Averages across p, 3, r, a , s, b, fg%, ft%, t
@@ -115,11 +129,14 @@ class Season:
         
         print(tabulate(averagesDF, headers='keys', tablefmt='pretty'))
         averagesDF.to_csv('out.csv', sep=',')
+        
+        #----------------------------------------------------------------------------------------------------------------------
 
-    # Export data frame into CSV file, print nicely
-    # print(tabulate(top, headers='keys', tablefmt='pretty'))
-    # top.to_csv('out.csv', sep=',')
-# Only run code if 
+        # Export data frame into CSV file, print nicely
+        # print(tabulate(top, headers='keys', tablefmt='pretty'))
+        # top.to_csv('out.csv', sep=',')
+
+# Only run this code if ran directly on 'season.py'
 if __name__ == "__main__":
     # season = '19-20'
     # season = '20-21'
@@ -128,8 +145,9 @@ if __name__ == "__main__":
     ranks = user.ranks
     numTop = 10
     
-    user.initialize(ranks, season)
-    # user.displayTop(user.ranks, numTop, season)
+    user.initialize(ranks)
+    # user.displayTopOverall(user.ranks, numTop, season)
+    # user.displayTopKeepCats(ranks, numTop, season)
     user.displaySeasonAvgs(ranks, season)
 
 # else:
