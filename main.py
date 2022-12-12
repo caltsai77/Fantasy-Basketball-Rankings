@@ -1,42 +1,64 @@
 # Author: Caleb Tsai
-import pandas as pd
-season = '21-22' + '.csv'
+from season import Season
+def main():
+    # Ask user if they want to start
+    # name = input('Enter name: ')
+    # isYes = input(f'Hi {name}! To begin, please input "Y"')
+    
+    # if isYes == "Y":
+    #     print(f'Awesome! We can get started')
+    # else:
+    #     print(f'Goodbye, have a great day!')
+    #     quit()
 
-# Parse .csv file into dataframe, drop unneeded columns
-ranks = pd.read_csv(season)
-ranks = ranks.drop(columns=['Round', 'Inj'])
+    # Initialize season as well as default season
+    availableSeasons = ['19-20', '20-21', '21-22']
+    season = input('Please enter the season in format YY-YY (Ex: 21-22): ')
+    if season not in availableSeasons:
+        print(f'Your inputted season of {season} is not available in the database: default season is 2021-22')
+        season = '21-22'
+    # season = '21-22'
 
-# Round every appropriate statistic to appropriate decimal points
-# Average Stats: m/g, p/g, 3/g, r/g, a/g, s/g, b/g, fg%, fga/g, ft%, fta/g, to/g
-ranks['m/g'] = ranks['m/g'].round(decimals=1)
-ranks['p/g'] = ranks['p/g'].round(decimals=1)
-ranks['3/g'] = ranks['3/g'].round(decimals=1)
-ranks['r/g'] = ranks['r/g'].round(decimals=1)
-ranks['a/g'] = ranks['a/g'].round(decimals=1)
-ranks['s/g'] = ranks['s/g'].round(decimals=1)
-ranks['b/g'] = ranks['b/g'].round(decimals=1)
-ranks['fg%'] = ranks['fg%'].round(decimals=3)
-ranks['fga/g'] = ranks['fga/g'].round(decimals=1)
-ranks['ft%'] = ranks['ft%'].round(decimals=3)
-ranks['fta/g'] = ranks['fta/g'].round(decimals=1)
-ranks['to/g'] = ranks['to/g'].round(decimals=1)
-# Value Stats: Value, pV, 3V, rV, aV, sV, bV, fg%V, ft%V, toV
-ranks['pV'] = ranks['pV'].round(decimals=2)
-ranks['3V'] = ranks['3V'].round(decimals=2)
-ranks['rV'] = ranks['rV'].round(decimals=2)
-ranks['aV'] = ranks['aV'].round(decimals=2)
-ranks['sV'] = ranks['sV'].round(decimals=2)
-ranks['bV'] = ranks['bV'].round(decimals=2)
-ranks['fg%V'] = ranks['fg%V'].round(decimals=2)
-ranks['ft%V'] = ranks['ft%V'].round(decimals=2)
-ranks['toV'] = ranks['toV'].round(decimals=2)
+    # Create and initialize season object
+    user = Season(season)
+    user.initialize(user.ranks, user.season)
 
-# Print out top 5 ranked players
-top5rows = ranks.head()
-print(top5rows)
+    # Menu of Available Options for User
+    print(f'\nAvailable Options (Season: 20{season}):\n\n1. Display Top Players Overall')
+    print(f'2. Display Season Averages (9 Categories)\n3. Something Else')
 
-# Calculate Category Averages across p, 3, r, a , s, b, fg%, ft%, t
-averages = {key: 0.0 for key in ['p', '3', 'r', 'a', 's', 'b', 'fg%', 'ft%', 't']}
-print(averages)
+    # User input validation for choice
+    while True:
+        choice = input('\nPlease enter your choice (from 1 to 3): ')
+        try:  
+            choice = int(choice)  
+        except ValueError:
+            print(f'{choice} is NOT a valid number. Please input a valid number from 1 to 3')
+            continue
+        if 1 <= choice <= 3:
+            break
+        else:
+            print(f'{choice} is outside the appropriate range. Number MUST be from 1 to 3')
 
-# Identify row where cat's value is closest to 0.0, assign avg of cat to corresponding stat
+    # Choice 1: Display top x players 
+    if choice == 1:
+        # Validate user input
+        while True:
+            num = input('\n1. Display Top Players Overall\nPlease enter the number of players to be displayed (1 to 188): ')
+            try:  
+                num = int(num)  
+            except ValueError:
+                print(f'{num} is NOT a valid number. Please input a valid number from 1 to 188')
+                continue
+            if 1 <= num <= 188:
+                break
+            else:
+                print(f'{num} is outside the appropriate range. Number MUST be from 1 to 188')
+        user.displayTop(user.ranks, num, user.season)
+
+    # Choice 2: Display Season Averages (9 Cats)
+    elif choice == 2:
+        user.displaySeasonAvgs(user.ranks, user.season)
+
+if __name__ == "__main__":
+    main()
