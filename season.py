@@ -1,14 +1,20 @@
 # Author: Caleb Tsai
 import pandas as pd
+pd.options.mode.chained_assignment = None
 from tabulate import tabulate
 # if __name__ == "__main__":
 class Season:
     season = ''
     ranks = pd.DataFrame()
     # Constructor: season either default or user inputted into dataframe
-    def __init__(self, season):
-        self.season = season
-        self.ranks = pd.read_csv(season+'.csv').drop(columns=['Round', 'Inj'])
+    def __init__(self, season, dataType):
+        # Path is either elite or all player data
+        if dataType == 'Elite':
+            path = './Data_Elite/CSV/'
+        else:
+            path = './Data_All/CSV/'
+        self.season += season
+        self.ranks = pd.read_csv(path+self.season+'.csv', index_col=False).drop(columns=['Round', 'Inj'])
 
     def initialize(self, ranks):
         # Round every appropriate statistic to appropriate decimal points
@@ -39,6 +45,7 @@ class Season:
     #----------------------------------------------------------------------------------------------------------------------
     # Print out top x ranked players overall
     def displayTopOverall(self, ranks, num, season):
+        ranks.set_index('Rank', inplace=True)
         top = ranks.head(num).drop(columns=['pV', '3V', 'rV', 'aV', 'sV', 'bV', 'fg%V', 'ft%V', 'toV'])
 
         # Print dataframe (markdown, plain-text, psql, github, pretty, HTML), export to 'out.csv' file
@@ -47,17 +54,63 @@ class Season:
         top.to_csv('out.csv', sep=',')
 
     #----------------------------------------------------------------------------------------------------------------------
-    def displayTopKeepCats(self, ranks, num, season, cats, code):
+    def displayTopKeepCats(self, ranks, numPlayers, season, cats):
+        codeName = {1:'Points', 2:'3-Pointers Made', 3:'Rebounds', 4:'Assists', 5:'Steals', 6:'Blocks', 7:'Field Goal Percentage', 8:'Free Throw Percentage', 9:'Turnovers'}
         # Heading of output
         chosen = ''
         if len(cats) == 1:
-            print(f'\nTop Players Given {len(cats)} Category ({code[cats[0]]}) in the 20{season} season:')
+            print(f'\nTop Players Based On {len(cats)} Category ({codeName[cats[0]]}) in the 20{season} season:')
         else:
-            chosen += (f'{code[cats[0]]}')
+            chosen += (f'{codeName[cats[0]]}')
             for cat in cats[1:]:
-                chosen += (f', {code[cat]}')
-            print(f'\nTop Players Given {len(cats)} Categories ({chosen}) in the 20{season} season:')
+                chosen += (f', {codeName[cat]}')
+            print(f'\nTop Players Based On {len(cats)} Categories ({chosen}) in the 20{season} season:')
+        
+        # Dictionary to map to values categories in ranks df
+        codeLabel = {1:'pV', 2:'3V', 3:'rV', 4:'aV', 5:'sV', 6:'bV', 7:'fg%V', 8:'ft%V', 9:'toV'}
 
+        # Rename column name from 'Value' to 'LeagueV'
+        ranks.rename(columns={'Value':'LeagueV'}, inplace = True)
+
+        # Add empty adjValue column after 'Rank' column, empty valueDiff column after 'LeagueV' column
+        ranks.insert(1, 'AdjV', 0.0)
+        ranks.insert(3, 'KeepV', 0.0)
+
+        # Assign value in 'AdjV' to sum of _V categories desired divided by the # of categories
+        numCats = len(cats)
+        if numCats == 1:
+            ranks['AdjV'] = round(ranks[codeLabel[cats[0]]], 2)
+        elif numCats == 2:
+            ranks['AdjV'] = round(((ranks[codeLabel[cats[0]]] + ranks[codeLabel[cats[1]]]) / len(cats)), 2)
+        elif numCats == 3:
+            ranks['AdjV'] = round(((ranks[codeLabel[cats[0]]] + ranks[codeLabel[cats[1]]] + ranks[codeLabel[cats[2]]]) / len(cats)), 2)
+        elif numCats == 4:
+            ranks['AdjV'] = round(((ranks[codeLabel[cats[0]]] + ranks[codeLabel[cats[1]]] + ranks[codeLabel[cats[2]]] + ranks[codeLabel[cats[3]]]) / len(cats)), 2)
+        elif numCats == 5:
+            ranks['AdjV'] = round(((ranks[codeLabel[cats[0]]] + ranks[codeLabel[cats[1]]] + ranks[codeLabel[cats[2]]] + ranks[codeLabel[cats[3]]] + ranks[codeLabel[cats[4]]]) / len(cats)), 2)
+        elif numCats == 6:
+            ranks['AdjV'] = round(((ranks[codeLabel[cats[0]]] + ranks[codeLabel[cats[1]]] + ranks[codeLabel[cats[2]]] + ranks[codeLabel[cats[3]]] + ranks[codeLabel[cats[4]]] + ranks[codeLabel[cats[5]]]) / len(cats)), 2)
+        elif numCats == 7:
+            ranks['AdjV'] = round(((ranks[codeLabel[cats[0]]] + ranks[codeLabel[cats[1]]] + ranks[codeLabel[cats[2]]] + ranks[codeLabel[cats[3]]] + ranks[codeLabel[cats[4]]] + ranks[codeLabel[cats[5]]] + ranks[codeLabel[cats[6]]]) / len(cats)), 2)
+        elif numCats == 8:
+            ranks['AdjV'] = round(((ranks[codeLabel[cats[0]]] + ranks[codeLabel[cats[1]]] + ranks[codeLabel[cats[2]]] + ranks[codeLabel[cats[3]]] + ranks[codeLabel[cats[4]]] + ranks[codeLabel[cats[5]]] + ranks[codeLabel[cats[6]]] + ranks[codeLabel[cats[7]]]) / len(cats)), 2)
+        else:
+            ranks['AdjV'] = ranks['LeagueV']
+        # Drop value columns bc they're unneeded now
+        ranks = ranks.drop(columns=['pV', '3V', 'rV', 'aV', 'sV', 'bV', 'fg%V', 'ft%V', 'toV'])
+        # Assign value in 'KeepV' to be difference between AdjV and LeagueV
+        ranks.loc[:, 'KeepV'] = round((ranks.loc[:, 'AdjV'] - ranks.loc[:, 'LeagueV']), 2)
+
+        # Sort by adjusted value descending, update corresponding rank
+        ranks = ranks.sort_values(by=['AdjV'], ascending=False)
+        ranks.insert(0, 'AdjRank', range(1, 1+len(ranks)))
+        ranks.rename(columns={'Rank':'LeagueRank'}, inplace = True)
+        ranks.set_index('AdjRank', inplace=True)
+        top = ranks.head(numPlayers)
+        
+        # Print out updated rankings by category and export
+        print(tabulate(top, headers='keys', tablefmt='pretty'))
+        top.to_csv('out.csv', sep=',', index=False)
 
     #----------------------------------------------------------------------------------------------------------------------
     # Print out season averages across all 9 categories for current season
@@ -122,18 +175,21 @@ class Season:
         averages['Turnovers'].append(turnoversAvg[0])
         averages['Turnovers'].append(turnoversAvgName[0])
 
+        # Add average stat, player who represents that chat into dataFrame
         print(f'\nLeague Averages (Categories) for the 20{season} season:')
         averagesDF = pd.DataFrame()
         for stat in averages.keys():
             averagesDF[stat] = [averages[stat][0], averages[stat][1]]
+        averagesDF.set_index([['Stat', 'Player']], inplace=True)
         
+        # Print and export
         print(tabulate(averagesDF, headers='keys', tablefmt='pretty'))
         averagesDF.to_csv('out.csv', sep=',')
         
         #----------------------------------------------------------------------------------------------------------------------
 
         # Export data frame into CSV file, print nicely
-        # print(tabulate(top, headers='keys', tablefmt='pretty'))
+        # print(tabulate(__, headers='keys', tablefmt='pretty'))
         # top.to_csv('out.csv', sep=',')
 
 # Only run this code if ran directly on 'season.py'
@@ -144,11 +200,20 @@ if __name__ == "__main__":
     user = Season(season)
     ranks = user.ranks
     numTop = 10
+    cats = [1, 2]
     
+    # Initialize
     user.initialize(ranks)
-    # user.displayTopOverall(user.ranks, numTop, season)
-    # user.displayTopKeepCats(ranks, numTop, season)
-    user.displaySeasonAvgs(ranks, season)
 
+    # Choice 1: Display Top Players Overall
+    # user.displayTopOverall(user.ranks, numTop, season)
+
+    # Choice 2: Display Top Players Adjusted by Keeping Categories
+    user.displayTopKeepCats(ranks, numTop, season, cats)
+
+    # Choice 3: Display season averages across all 9 cats
+    # user.displaySeasonAvgs(ranks, season)
+
+# Below code is ran if not running directly on file (imported to another file)
 # else:
 #     print('Not the original file')
