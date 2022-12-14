@@ -11,6 +11,8 @@ def main():
     if season not in availableSeasons:
         print(f'ERROR: Your inputted season of {season} is not available: season set to 2021-22')
         season = '21-22'
+    
+    #----------------------------------------------------------------------------------------------------------------------
     # If season is not the current calendar season, ask user for elite player (Top 188) data or all player data
     if season != currYear:
         start = True
@@ -26,10 +28,11 @@ def main():
             else:
                 print(f'\nInvalid input! Please input either "e" (ELITE) or "a" (ALL)')
     
+    # Set dataType to either 'elite' or 'all'
     dataType = 'Elite'
     if not (letter == 'e'):
         dataType = 'All'
-    #----------------------------------------------------------------------------------------------------------------------
+
     # Continue loop until user chooses to leave program
     while True:
         # Create and initialize season object
@@ -37,8 +40,8 @@ def main():
         user.initialize(user.ranks)
 
         # Menu of Available Options for User
-        print(f'\nAvailable Options (Season: 20{season}, Player Data: {dataType}):\n\n1. Display Top Players (Overall)')
-        print(f'2. Display Top Players (Given User-Selected Categories to Keep)')
+        print(f'\nAvailable Options (Season: 20{season}, Player Data: {dataType})\n\n1. Display Top Players (All Categories)')
+        print(f'2. Display Top Players (Select Categories to Keep)')
         print(f'3. Display Season Averages (9 Categories)')
         print(f'4. End program')
 
@@ -61,7 +64,7 @@ def main():
         if choice == 1:
             # Validate user input (number of players to be displayed)
             while True:
-                num = input(f'\n1. Display Top Players (Overall)\nPlease enter the number of players to be displayed (1 to {len(user.ranks)}): ')
+                num = input(f'\n1. Display Top Players (All Categories)\nPlease enter the number of players to be displayed (1 to {len(user.ranks)}): ')
                 try:  
                     num = int(num)  
                 except ValueError:
@@ -78,22 +81,21 @@ def main():
         elif choice == 2:
             # Validate user input (number of players to be displayed) before asking for number of categories
             while True:
-                num = input(f'\n2. Display Top Players (Keep User-Selected Categories)\nPlease enter the number of players to be displayed (1 to {len(user.ranks)}): ')
+                num = input(f'\n2. Display Top Players (Select Categories to Keep)\nPlease enter the number of players to be displayed (1 to {len(user.ranks)}): ')
                 try:  
                     num = int(num)  
                 except ValueError:
                     print(f'{num} is NOT a valid number. Please input a valid number from 1 to {len(user.ranks)}')
                     continue
-                if 1 <= num <= {len(user.ranks)}:
+                if 1 <= num <= len(user.ranks.index):
                     break
                 else:
                     print(f'{num} is outside the appropriate range. Number MUST be from 1 to {len(user.ranks)}')
             
             #----------------------------------------------------------------------------------------------------------------------
             # Obtain number of desired categories
-            print(f'\n2. Display Top Players (Keep User-Selected Categories)')
             while True:
-                numCats = input(f'Please input the total number of categories to KEEP (1 to 8): ')
+                numCats = input(f'\nPlease input the total number of categories to KEEP (1 to 8): ')
                 try:
                     numCats = int(numCats)
                 except ValueError:
@@ -147,6 +149,9 @@ def main():
                 for cat in userCats[1:]:
                     chosen += (f', {code[cat]}')
                 print(f'\nCategories Chosen ({len(userCats)}): {chosen}')
+            
+            # Determine sorting criteria (adjusted value or value differential)
+            
 
             # Call function
             user.displayTopKeepCats(user.ranks, num, user.season, userCats)
@@ -194,7 +199,7 @@ def main():
         if keepSeason == 'y':
             newSeason = input('\nPlease enter the new season in the format: YY-YY (Ex: 21-22): ')
             if newSeason not in availableSeasons:
-                print(f'Your inputted newSeason of {season} is not available in the database; the season will remain the same: 20{season}')
+                print(f'Your inputted season of {season} is not available in the database: the season will remain the same: 20{season}')
             else:
                 season = newSeason
 

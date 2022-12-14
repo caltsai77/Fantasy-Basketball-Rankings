@@ -2,7 +2,8 @@
 import pandas as pd
 pd.options.mode.chained_assignment = None
 from tabulate import tabulate
-# if __name__ == "__main__":
+
+# Season class
 class Season:
     season = ''
     ranks = pd.DataFrame()
@@ -16,35 +17,55 @@ class Season:
         self.season += season
         self.ranks = pd.read_csv(path+self.season+'.csv', index_col=False).drop(columns=['Round', 'Inj'])
 
+     #-----------------------------------------------------------------------------------------------------------------------------
+    # Round every appropriate statistic to appropriate decimal points
     def initialize(self, ranks):
-        # Round every appropriate statistic to appropriate decimal points
         # Average Stats: m/g, p/g, 3/g, r/g, a/g, s/g, b/g, fg%, fga/g, ft%, fta/g, to/g
-        ranks['m/g'] = ranks['m/g'].round(decimals=1)
-        ranks['p/g'] = ranks['p/g'].round(decimals=1)
-        ranks['3/g'] = ranks['3/g'].round(decimals=1)
-        ranks['r/g'] = ranks['r/g'].round(decimals=1)
-        ranks['a/g'] = ranks['a/g'].round(decimals=1)
-        ranks['s/g'] = ranks['s/g'].round(decimals=1)
-        ranks['b/g'] = ranks['b/g'].round(decimals=1)
-        ranks['fg%'] = ranks['fg%'].round(decimals=3)
-        ranks['fga/g'] = ranks['fga/g'].round(decimals=1)
-        ranks['ft%'] = ranks['ft%'].round(decimals=3)
-        ranks['fta/g'] = ranks['fta/g'].round(decimals=1)
-        ranks['to/g'] = ranks['to/g'].round(decimals=1)
+        ranks['m/g'] = round(ranks['m/g'], 1)
+        ranks['p/g'] = round(ranks['p/g'], 1)
+        ranks['3/g'] = round(ranks['3/g'], 1)
+        ranks['r/g'] = round(ranks['r/g'], 1)
+        ranks['a/g'] = round(ranks['a/g'], 1)
+        ranks['s/g'] = round(ranks['s/g'], 1)
+        ranks['b/g'] = round(ranks['b/g'], 1)
+        ranks['fg%'] = round(ranks['fg%'], 3)
+        ranks['fga/g'] = round(ranks['fga/g'], 1)
+        ranks['ft%'] = round(ranks['ft%'], 3)
+        ranks['fta/g'] = round(ranks['fta/g'], 1)
+        ranks['to/g'] = round(ranks['to/g'], 1)
+
         # Value Stats: Value, pV, 3V, rV, aV, sV, bV, fg%V, ft%V, toV
-        ranks['Value'] = ranks['Value'].round(decimals=2)
-        ranks['pV'] = ranks['pV'].round(decimals=2)
-        ranks['3V'] = ranks['3V'].round(decimals=2)
-        ranks['rV'] = ranks['rV'].round(decimals=2)
-        ranks['aV'] = ranks['aV'].round(decimals=2)
-        ranks['sV'] = ranks['sV'].round(decimals=2)
-        ranks['bV'] = ranks['bV'].round(decimals=2)
-        ranks['fg%V'] = ranks['fg%V'].round(decimals=2)
-        ranks['ft%V'] = ranks['ft%V'].round(decimals=2)
-        ranks['toV'] = ranks['toV'].round(decimals=2)
+        ranks['Value'] = round(ranks['Value'], 2)
+        ranks['pV'] = round(ranks['pV'], 2)
+        ranks['3V'] = round(ranks['3V'], 2)
+        ranks['rV'] = round(ranks['rV'], 2)
+        ranks['aV'] = round(ranks['aV'], 2)
+        ranks['sV'] = round(ranks['sV'], 2)
+        ranks['bV'] = round(ranks['bV'], 2)
+        ranks['fg%V'] = round(ranks['fg%V'], 2)
+        ranks['ft%V'] = round(ranks['ft%V'], 2)
+        ranks['toV'] = round(ranks['toV'], 2)
+
+    #-----------------------------------------------------------------------------------------------------------------------------
+    # Format every appropriate statistic to appropriate decimal points
+    def formatAll(self, ranks, colFormat):
+        # Format appropriate columns based on colFormat dictionary -> {column:decimals}
+        for col, decimal in colFormat.items():
+            if decimal == 2:
+                # Differential Category: add '+' before positive numbers
+                if col == 'KeepV':
+                    ranks.loc[ranks[col] > 0.0, col] = ranks.loc[:, col].apply(lambda x: "+{:.2f}".format(x))
+                else:
+                    ranks[col] = ranks[col].apply(lambda x: "{:.2f}".format(x))
+            else:
+                ranks[col] = ranks[col].apply(lambda x: "{:.3f}".format(x))
+
     #----------------------------------------------------------------------------------------------------------------------
     # Print out top x ranked players overall
     def displayTopOverall(self, ranks, num, season):
+        # Format percentages
+        colFormat = {'fg%':3, 'ft%':3, 'Value':2}
+        self.formatAll(ranks, colFormat)
         ranks.set_index('Rank', inplace=True)
         top = ranks.head(num).drop(columns=['pV', '3V', 'rV', 'aV', 'sV', 'bV', 'fg%V', 'ft%V', 'toV'])
 
@@ -52,6 +73,7 @@ class Season:
         print(f'\nTop Players Overall in the 20{season} season')
         print(tabulate(top, headers='keys', tablefmt='pretty'))
         top.to_csv('out.csv', sep=',')
+        # print(self.ranks.dtypes)
 
     #----------------------------------------------------------------------------------------------------------------------
     def displayTopKeepCats(self, ranks, numPlayers, season, cats):
@@ -96,16 +118,30 @@ class Season:
             ranks['AdjV'] = round(((ranks[codeLabel[cats[0]]] + ranks[codeLabel[cats[1]]] + ranks[codeLabel[cats[2]]] + ranks[codeLabel[cats[3]]] + ranks[codeLabel[cats[4]]] + ranks[codeLabel[cats[5]]] + ranks[codeLabel[cats[6]]] + ranks[codeLabel[cats[7]]]) / len(cats)), 2)
         else:
             ranks['AdjV'] = ranks['LeagueV']
-        # Drop value columns bc they're unneeded now
+        
+        # Format into 2 decimals correctly, drop value columns (unneeded now)
+        ranks['AdjV'] = ranks['AdjV'].apply(lambda x: "{:.2f}".format(x)).apply(lambda x: float(x))
         ranks = ranks.drop(columns=['pV', '3V', 'rV', 'aV', 'sV', 'bV', 'fg%V', 'ft%V', 'toV'])
+        
         # Assign value in 'KeepV' to be difference between AdjV and LeagueV
         ranks.loc[:, 'KeepV'] = round((ranks.loc[:, 'AdjV'] - ranks.loc[:, 'LeagueV']), 2)
+        ranks['KeepV'] = ranks['KeepV'].apply(lambda x: "{:.2f}".format(x)).apply(lambda x: float(x))
 
-        # Sort by adjusted value descending, update corresponding rank
+
+        # Sort by adjusted value descending
         ranks = ranks.sort_values(by=['AdjV'], ascending=False)
+
+        # Sort by value differential descending
+        # ranks = ranks.sort_values(by=['KeepV'], ascending=False)
+        
+        # Update corresponding rank
         ranks.insert(0, 'AdjRank', range(1, 1+len(ranks)))
         ranks.rename(columns={'Rank':'LeagueRank'}, inplace = True)
         ranks.set_index('AdjRank', inplace=True)
+
+        # Format value columns
+        colFormat = {'LeagueV':2, 'KeepV':2, 'AdjV':2, 'fg%':3, 'ft%':3}
+        self.formatAll(ranks, colFormat)
         top = ranks.head(numPlayers)
         
         # Print out updated rankings by category and export
