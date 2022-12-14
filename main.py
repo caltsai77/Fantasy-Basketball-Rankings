@@ -19,7 +19,7 @@ def main():
         # Loop until user inputs either "e" (elite) or "a" (all)
         while True:
             if start:
-                letter = input(f'\nThere are 2 available data types to use:\nEnter "e" to use data of ELITE (Top 188) players.\nEnter "a" to use data of ALL players.\nChoice: ')
+                letter = input(f'\nThere are 2 available data types to use:\nEnter "e" to use data of ELITE players (Top 188).\nEnter "a" to use data of ALL players.\n\nChoice: ')
                 start = False
             else:
                 letter = input(f'Choice: ')
@@ -41,9 +41,9 @@ def main():
 
         # Menu of Available Options for User
         print(f'\nAvailable Options (Season: 20{season}, Player Data: {dataType})\n\n1. Display Top Players (All Categories)')
-        print(f'2. Display Top Players (Select Categories to Keep)')
+        print(f'2. Display Top Players (Select Categories to EITHER Keep or Punt)')
         print(f'3. Display Season Averages (9 Categories)')
-        print(f'4. End program')
+        print(f'4. End Program')
 
         #----------------------------------------------------------------------------------------------------------------------
         # User input validation for choice
@@ -77,8 +77,30 @@ def main():
             user.displayTopOverall(user.ranks, num, user.season)
 
         #----------------------------------------------------------------------------------------------------------------------
-        # Choice 2: Display top x players by certain filtered categories
+        # Choice 2: Display top x players by either keeping or punting categories
         elif choice == 2:
+            # Prompt user to keep or punt categories
+            start = True
+            while True:
+                # Initial prompt
+                if start:
+                    sort_input = input(f'\nWould you like to keep or punt (remove) categories:\n1: Keep\n2: Punt\n\nChoice: ')
+                # Prompt that is cut off
+                else:
+                    sort_input = input(f'\nChoice: ')
+                try:
+                    sort_input = int(sort_input)
+                except ValueError:
+                    print(f'1: Keep\n2: Punt\n\n{sort_input} is NOT a valid number. Please input either 1 (Keep) or 2 (Punt)')
+                    continue
+                if 1 <= sort_input <= 2:
+                    break
+                else:
+                    print(f'1: Keep\n2: Punt\n\n{sort_input} is outside the appropriate range. Please input either 1 (Keep) or 2 (Punt)')
+            
+            # Set is_punt to True if user chooses to punt, False for keep
+            is_punt = True if sort_input == 2 else False
+
             # Validate user input (number of players to be displayed) before asking for number of categories
             while True:
                 num = input(f'\n2. Display Top Players (Select Categories to Keep)\nPlease enter the number of players to be displayed (1 to {len(user.ranks)}): ')
@@ -95,66 +117,123 @@ def main():
             #----------------------------------------------------------------------------------------------------------------------
             # Obtain number of desired categories
             while True:
-                numCats = input(f'\nPlease input the total number of categories to KEEP (1 to 8): ')
+                # Keep vs Punt
+                if is_punt:
+                    numCats = input(f'\nPlease input the total number of categories to PUNT (1 to 8): ')
+                else:
+                    numCats = input(f'\nPlease input the total number of categories to KEEP (1 to 8): ')
                 try:
                     numCats = int(numCats)
                 except ValueError:
-                    print(f'{numCats} is NOT a valid number. Please input a valid number from 1 to 8 (categories to KEEP)')
+                    if is_punt:
+                        print(f'{numCats} is NOT a valid number. Please input a valid number from 1 to 8 (categories to PUNT)')
+                    else:
+                        print(f'{numCats} is NOT a valid number. Please input a valid number from 1 to 8 (categories to KEEP)')
                     continue
                 if 1 <= numCats <= 8:
                     break
                 else:
-                    print(f'{numCats} is outside the appropriate range. Number MUST be from 1 to 8 (categories to KEEP)')
+                    if is_punt:
+                        print(f'{numCats} is outside the appropriate range. Number MUST be from 1 to 8 (categories to PUNT)')
+                    else:
+                        print(f'{numCats} is outside the appropriate range. Number MUST be from 1 to 8 (categories to KEEP)')
 
             #----------------------------------------------------------------------------------------------------------------------------------------------------------------------
             # Obtain each individual category to keep
             code = {1:'Points', 2:'3-Pointers Made', 3:'Rebounds', 4:'Assists', 5:'Steals', 6:'Blocks', 7:'Field Goal Percentage', 8:'Free Throw Percentage', 9:'Turnovers'}
             codeStr = f'1: {code[1]}\n2: {code[2]}\n3: {code[3]}\n4: {code[4]}\n5: {code[5]}\n6: {code[6]}\n7: {code[7]}\n8: {code[8]}\n9: {code[9]}'
-            userCats = []
+            user_cats = []
             for i in range(numCats):
                 while True:
                     # Initial prompt
                     if i == 0:
-                        currCat = input(f'\nMap (Input: Category)\n{codeStr}\n\nPlease input category to keep ({len(userCats)}/{numCats} chosen): ')
+                        if is_punt:
+                            currCat = input(f'\nMap (Input: Category)\n{codeStr}\n\nPlease input category to punt ({len(user_cats)}/{numCats} chosen): ')
+                        else:
+                            currCat = input(f'\nMap (Input: Category)\n{codeStr}\n\nPlease input category to keep ({len(user_cats)}/{numCats} chosen): ')
                     # Prompt that includes categories already chosen
                     else:
                         chosen = ''
-                        if len(userCats) == 1:
-                            chosen += (f'{userCats[0]} ({code[userCats[0]]})')
+                        if len(user_cats) == 1:
+                            chosen += (f'{user_cats[0]} ({code[user_cats[0]]})')
                         else:
-                            chosen += (f'{userCats[0]} ({code[userCats[0]]})')
-                            for cat in userCats[1:]:
+                            chosen += (f'{user_cats[0]} ({code[user_cats[0]]})')
+                            for cat in user_cats[1:]:
                                 chosen += (f', {cat} ({code[cat]})')
-                        currCat = input(f'\nMap (Input: Category)\n{codeStr}\n\nCategories Chosen: {chosen}\nPlease input category to keep ({len(userCats)}/{numCats} chosen): ')
+                        # Show selected categories (after initial prompt)
+                        if is_punt:
+                            currCat = input(f'\nMap (Input: Category)\n{codeStr}\n\nCategories Chosen: {chosen}\nPlease input category to punt ({len(user_cats)}/{numCats} chosen): ')
+                        else:
+                            currCat = input(f'\nMap (Input: Category)\n{codeStr}\n\nCategories Chosen: {chosen}\nPlease input category to keep ({len(user_cats)}/{numCats} chosen): ')
                     try:
                         currCat = int(currCat)
                     except ValueError:
-                        print(f'{codeStr}\n\n{currCat} is NOT a valid number. Please input a valid number from 1 to 9 (categories to KEEP)')
+                        if is_punt:
+                            print(f'{codeStr}\n\n{currCat} is NOT a valid number. Please input a valid number from 1 to 9 (categories to PUNT)')
+                        else:
+                            print(f'{codeStr}\n\n{currCat} is NOT a valid number. Please input a valid number from 1 to 9 (categories to KEEP)')
                         continue
                     if 1 <= currCat <= 9:
-                        if currCat in userCats:
-                            print(f'{codeStr}\n\n{code[currCat]} ({currCat}) has been selected. Choose another category!')
+                        if currCat in user_cats:
+                            print(f'{codeStr}\n\n{code[currCat]} ({currCat}) has been selected... Choose another category!')
                         else:
                             break
                     else:
-                        print(f'{codeStr}\n\n{currCat} is outside the appropriate range. Number MUST be from 1 to 9 (categories to KEEP)')
-                userCats.append(currCat)
+                        if is_punt:
+                            print(f'{codeStr}\n\n{currCat} is outside the appropriate range. Number MUST be from 1 to 9 (categories to PUNT)')
+                        else:
+                            print(f'{codeStr}\n\n{currCat} is outside the appropriate range. Number MUST be from 1 to 9 (categories to KEEP)')
+                user_cats.append(currCat)
             #----------------------------------------------------------------------------------------------------------------------------------------------------------------------
             # Print chosen categories to user
             chosen = ''
-            if len(userCats) == 1:
-                print(f'\nCategory Chosen (1): {code[userCats[0]]}')
+            if len(user_cats) == 1:
+                if is_punt:
+                    print(f'\nCategory Chosen to Punt (1): {code[user_cats[0]]}')
+                else:
+                    print(f'\nCategory Chosen to Keep (1): {code[user_cats[0]]}')
             else:
-                chosen += (f'{code[userCats[0]]}')
-                for cat in userCats[1:]:
+                chosen += (f'{code[user_cats[0]]}')
+                for cat in user_cats[1:]:
                     chosen += (f', {code[cat]}')
-                print(f'\nCategories Chosen ({len(userCats)}): {chosen}')
+                if is_punt:
+                    print(f'\nCategories Chosen to Punt ({len(user_cats)}): {chosen}')
+                else:
+                    print(f'\nCategories Chosen to Keep ({len(user_cats)}): {chosen}')
+            
+            # If punting, assign cats in user_cats to categories NOT in it
+            if is_punt:
+                punt_cats = [cat for cat in [1, 2, 3, 4, 5, 6, 7, 8, 9] if cat not in user_cats]
+                print(punt_cats)
             
             # Determine sorting criteria (adjusted value or value differential)
+            criteria_str = f'1: Adjusted Value (New Value Given Selected Categories)\n2: Value Differential (Adjusted Value vs League Value)'
+            start = True
+            while True:
+                # Initial prompt
+                if start:
+                    sort_input = input(f'\nPlease select a sorting criteria:\n{criteria_str}\n\nChoice: ')
+                # Prompt that is cut off
+                else:
+                    sort_input = input(f'\nChoice: ')
+                try:
+                    sort_input = int(sort_input)
+                except ValueError:
+                    print(f'{criteria_str}\n\n{sort_input} is NOT a valid number. Please input either 1 (Adjusted Value) or 2 (Value Differential)')
+                    continue
+                if 1 <= sort_input <= 2:
+                    break
+                else:
+                    print(f'{codeStr}\n\n{sort_input} is outside the appropriate range. Please input either 1 (Adjusted Value) or 2 (Value Differential)')
             
+            # Assign appropriate sorting criteria, pass into function call
+            sort_criteria = 'Adjusted Value' if sort_input == 1 else 'Value Differential'
 
-            # Call function
-            user.displayTopKeepCats(user.ranks, num, user.season, userCats)
+            # Call function depending on keeping or punting categories
+            if is_punt:
+                user.displayTopKeepCats(user.ranks, num, user.season, punt_cats, sort_criteria)
+            else:
+                user.displayTopKeepCats(user.ranks, num, user.season, user_cats, sort_criteria)
         #----------------------------------------------------------------------------------------------------------------------
         # Choice 3: Display Season Averages (9 Cats)
         elif choice == 3:
@@ -179,6 +258,7 @@ def main():
                 break
             else:
                 print(f'\nInvalid input! Please input either "y" (YES) or "n" (NO)')
+        
         # User wants to leave program
         if option == 'n':
             print(f'\nGoodbye, have a great day!')

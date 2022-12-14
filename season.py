@@ -76,7 +76,7 @@ class Season:
         # print(self.ranks.dtypes)
 
     #----------------------------------------------------------------------------------------------------------------------
-    def displayTopKeepCats(self, ranks, numPlayers, season, cats):
+    def displayTopKeepCats(self, ranks, numPlayers, season, cats, criteria):
         codeName = {1:'Points', 2:'3-Pointers Made', 3:'Rebounds', 4:'Assists', 5:'Steals', 6:'Blocks', 7:'Field Goal Percentage', 8:'Free Throw Percentage', 9:'Turnovers'}
         # Heading of output
         chosen = ''
@@ -127,12 +127,12 @@ class Season:
         ranks.loc[:, 'KeepV'] = round((ranks.loc[:, 'AdjV'] - ranks.loc[:, 'LeagueV']), 2)
         ranks['KeepV'] = ranks['KeepV'].apply(lambda x: "{:.2f}".format(x)).apply(lambda x: float(x))
 
-
         # Sort by adjusted value descending
-        ranks = ranks.sort_values(by=['AdjV'], ascending=False)
-
+        if criteria == 'Adjusted Value':
+            ranks = ranks.sort_values(by=['AdjV'], ascending=False)
         # Sort by value differential descending
-        # ranks = ranks.sort_values(by=['KeepV'], ascending=False)
+        else:
+            ranks = ranks.sort_values(by=['KeepV'], ascending=False)
         
         # Update corresponding rank
         ranks.insert(0, 'AdjRank', range(1, 1+len(ranks)))
@@ -233,10 +233,12 @@ if __name__ == "__main__":
     # season = '19-20'
     # season = '20-21'
     season = '21-22'
-    user = Season(season)
+    user = Season(season, 'All')
     ranks = user.ranks
     numTop = 10
     cats = [1, 2]
+    # criteria = 'Adjusted Value'
+    criteria = 'Value Differential'
     
     # Initialize
     user.initialize(ranks)
@@ -245,7 +247,7 @@ if __name__ == "__main__":
     # user.displayTopOverall(user.ranks, numTop, season)
 
     # Choice 2: Display Top Players Adjusted by Keeping Categories
-    user.displayTopKeepCats(ranks, numTop, season, cats)
+    user.displayTopKeepCats(ranks, numTop, season, cats, criteria)
 
     # Choice 3: Display season averages across all 9 cats
     # user.displaySeasonAvgs(ranks, season)
