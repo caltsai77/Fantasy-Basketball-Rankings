@@ -1,13 +1,11 @@
 # Fantasy Basketball Rankings
 ### Author: Caleb Tsai
 ### Created: 12/11/2022  
-</br>
 
 ## Purpose:
 - To display and rank Fantasy players for future drafts
 - To store player data among 9 unique categories year to year
 - To query specific searches (ex: best players i.t.o. points, steals, and assists)
-</br>
 
 ## Introduction
 Fantasy Basketball ([ESPN Fantasy Basketball Site](https://www.espn.com/fantasy/mens-basketball/)) is a ~~reality~~ game played by many users (yours truly) around the world (specifically the U.S.)
@@ -19,7 +17,6 @@ Leagues typically consist of 8-14 teams and rosters containing 10 starters, 3 be
 - SF (Flexibility / Handles, Ex: Jayson Tatum)
 - PF (Height / Strength, Ex: Domantas Sabonis)
 - C  (Rim Protector, Ex: Nikola Jokic)  
-</br>
 
 ## How to Use Program
 ### Option 1:
@@ -51,7 +48,6 @@ Head-to-Head formats are either points or category-based, with the latter being 
 - STL = 4
 - BLK = 4
 - TOV = -2
-</br>
 
 ### 9-Cat Scoring:
 - Points
@@ -80,14 +76,12 @@ Category Leagues: greater player pool, for more "serious" players, requires cons
 4. Input Validation including try/except
 5. Python Object2.Oriented Programming and Classes
 6. Python Data Structures including Lists and Dictionaries
-</br>
 
 ## Applications:
 1. For anyone interested in Fantasy Basketball trends and analysis across multiple seasons
 2. For anyone interested in NBA statistics!
 3. For anyone who wants to have a good time
 4. For you! :)
-</br>
 
 ## Future Features to Implement
 - Input player name: output entire career with averages, value over time (overall and across 9 cats)
@@ -95,7 +89,6 @@ Category Leagues: greater player pool, for more "serious" players, requires cons
 - Input team: output GOATS overall and for each cat
 - Create my own ranking system from raw NBA statistics via [Basketball Reference](https://www.basketball-reference.com/)  
 (I love Josh Lloyd don't get me wrong, I just wanna create my own rankings system!)
-</br>
 
 ## Sources:
 - [Basketball Monster Fantasy Basketball Player Rankings](https://basketballmonster.com/playerrankings.aspx)
