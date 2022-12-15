@@ -1,17 +1,26 @@
 # Author: Caleb Tsai
-# Main file that creates Season objects for a given user
+# Main driver that runs prompts, code for user
 from season import Season
 
 def main():
     # Initialize season as well as default season
     currYear = '22-23'
     availableSeasons = ['03-04', '04-05', '05-06', '06-07', '07-08', '08-09', '09-10', '10-11', '11-12', '12-13', '13-14', '14-15', '15-16', '16-17', '17-18', '18-19', '19-20', '20-21', '21-22']
-    season = input('\nPlease input the season in {YY-YY}. Available seasons range from 03-04 to 21-22\nSeason: ')
-    # Validate inputted season
-    if season not in availableSeasons:
-        print(f'ERROR: Your inputted season of {season} is not available: season set to 2021-22')
-        season = '21-22'
     
+    # Validate inputted season
+    start = True
+    while True:
+        if start:
+            season = input('\nPlease input the season in {YY-YY}. Available seasons range from 03-04 to 21-22.\nSeason: ')
+        else:
+            season = input('\nSeason: ')
+        # Validate inputted season
+        if season not in availableSeasons:
+            print(f'ERROR: Your inputted season of {season} is not available. Available seasons range from 03-04 to 21-22.')
+            continue
+        else:
+            break
+
     #----------------------------------------------------------------------------------------------------------------------
     # If season is not the current calendar season, ask user for elite player (Top 188) data or all player data
     if season != currYear:
@@ -204,7 +213,6 @@ def main():
             # If punting, assign cats in user_cats to categories NOT in it
             if is_punt:
                 punt_cats = [cat for cat in [1, 2, 3, 4, 5, 6, 7, 8, 9] if cat not in user_cats]
-                print(punt_cats)
             
             # Determine sorting criteria (adjusted value or value differential)
             criteria_str = f'1: Adjusted Value (New Value Given Selected Categories)\n2: Value Differential (Adjusted Value vs League Value)'
@@ -250,7 +258,7 @@ def main():
         start = True
         while True:
             if start:
-                option = input(f'\nAwesome! To select another option in the menu, input "y". To leave the program, input "n".\nChoice: ')
+                option = input(f'\nAwesome! To return to the menu, input "y". To leave the program, input "n".\nChoice: ')
                 start = False
             else:
                 option = input(f'Choice: ')
@@ -277,12 +285,19 @@ def main():
                 print(f'\nInvalid input! Please input either "y" (YES) or "n" (NO)')
         # User wants to change the season
         if keepSeason == 'y':
-            newSeason = input('\nPlease enter the new season in the format: YY-YY (Ex: 21-22): ')
-            if newSeason not in availableSeasons:
-                print(f'Your inputted season of {season} is not available in the database: the season will remain the same: 20{season}')
-            else:
-                season = newSeason
+            start = True
+            while True:
+                if start:
+                    newSeason = input('\nPlease enter the new season in {YY-YY}. Available seasons range from 03-04 to 21-22.\nNew Season: ')
+                else:
+                    newSeason = input('\nNew Season: ')
+                # Validate inputted season
+                if newSeason not in availableSeasons:
+                    print(f'ERROR: Your inputted season of {newSeason} is not available. Available seasons range from 03-04 to 21-22.')
+                    continue
+                else:
+                    break
 
-# Main, called if ran directly on 'main.py'
+# Main function called if ran directly on 'main.py'
 if __name__ == "__main__":
     main()

@@ -1,5 +1,6 @@
 # Author: Caleb Tsai
 import pandas as pd
+import numpy as np
 pd.options.mode.chained_assignment = None
 from tabulate import tabulate
 
@@ -52,9 +53,9 @@ class Season:
         # Format appropriate columns based on colFormat dictionary -> {column:decimals}
         for col, decimal in colFormat.items():
             if decimal == 2:
-                # Differential Category: add '+' before positive numbers
+                # Add '+' before positive numbers
                 if col == 'KeepV':
-                    ranks.loc[ranks[col] > 0.0, col] = ranks.loc[:, col].apply(lambda x: "+{:.2f}".format(x))
+                    ranks[col] = np.where( (ranks[col] > 0.0), (ranks[col].apply(lambda x: "+{:.2f}".format(x))), (ranks[col].apply(lambda x: "{:.2f}".format(x))))
                 else:
                     ranks[col] = ranks[col].apply(lambda x: "{:.2f}".format(x))
             else:
@@ -73,11 +74,11 @@ class Season:
         print(f'\nTop Players Overall in the 20{season} season')
         print(tabulate(top, headers='keys', tablefmt='pretty'))
         top.to_csv('out.csv', sep=',')
-        # print(self.ranks.dtypes)
 
     #----------------------------------------------------------------------------------------------------------------------
     def displayTopKeepCats(self, ranks, numPlayers, season, cats, criteria):
         codeName = {1:'Points', 2:'3-Pointers Made', 3:'Rebounds', 4:'Assists', 5:'Steals', 6:'Blocks', 7:'Field Goal Percentage', 8:'Free Throw Percentage', 9:'Turnovers'}
+        
         # Heading of output
         chosen = ''
         if len(cats) == 1:
@@ -119,13 +120,10 @@ class Season:
         else:
             ranks['AdjV'] = ranks['LeagueV']
         
-        # Format into 2 decimals correctly, drop value columns (unneeded now)
-        ranks['AdjV'] = ranks['AdjV'].apply(lambda x: "{:.2f}".format(x)).apply(lambda x: float(x))
+        # Round 'AdjV' to 2 decimals, assign value in 'KeepV' to be difference between AdjV and League, drop value columns (unneeded now)
+        ranks['AdjV'] = round(ranks['AdjV'], 2)
+        ranks['KeepV'] = round((ranks['AdjV'] - ranks['LeagueV']), 2)
         ranks = ranks.drop(columns=['pV', '3V', 'rV', 'aV', 'sV', 'bV', 'fg%V', 'ft%V', 'toV'])
-        
-        # Assign value in 'KeepV' to be difference between AdjV and LeagueV
-        ranks.loc[:, 'KeepV'] = round((ranks.loc[:, 'AdjV'] - ranks.loc[:, 'LeagueV']), 2)
-        ranks['KeepV'] = ranks['KeepV'].apply(lambda x: "{:.2f}".format(x)).apply(lambda x: float(x))
 
         # Sort by adjusted value descending
         if criteria == 'Adjusted Value':
@@ -151,7 +149,6 @@ class Season:
     #----------------------------------------------------------------------------------------------------------------------
     # Print out season averages across all 9 categories for current season
     def displaySeasonAvgs(self, ranks, season):
-        # Calculate Category Averages across p, 3, r, a , s, b, fg%, ft%, t
         # averages -> [category: [avg, player]]
         averages = {key: [] for key in ['Points', '3-Pointers Made', 'Rebounds', 'Assists', 'Steals', 'Blocks', 'Field Goal Percentage', 'Free Throw Percentage', 'Turnovers']}
 
@@ -222,36 +219,27 @@ class Season:
         print(tabulate(averagesDF, headers='keys', tablefmt='pretty'))
         averagesDF.to_csv('out.csv', sep=',')
         
-        #----------------------------------------------------------------------------------------------------------------------
-
-        # Export data frame into CSV file, print nicely
-        # print(tabulate(__, headers='keys', tablefmt='pretty'))
-        # top.to_csv('out.csv', sep=',')
-
+#----------------------------------------------------------------------------------------------------------------------
 # Only run this code if ran directly on 'season.py'
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # season = '19-20'
     # season = '20-21'
-    season = '21-22'
-    user = Season(season, 'All')
-    ranks = user.ranks
-    numTop = 10
-    cats = [1, 2]
+    # season = '21-22'
+    # user = Season(season, 'All')
+    # ranks = user.ranks
+    # numTop = 10
+    # cats = [1, 2]
     # criteria = 'Adjusted Value'
-    criteria = 'Value Differential'
+    # criteria = 'Value Differential'
     
     # Initialize
-    user.initialize(ranks)
+    # user.initialize(ranks)
 
     # Choice 1: Display Top Players Overall
     # user.displayTopOverall(user.ranks, numTop, season)
 
     # Choice 2: Display Top Players Adjusted by Keeping Categories
-    user.displayTopKeepCats(ranks, numTop, season, cats, criteria)
+    # user.displayTopKeepCats(ranks, numTop, season, cats, criteria)
 
     # Choice 3: Display season averages across all 9 cats
     # user.displaySeasonAvgs(ranks, season)
-
-# Below code is ran if not running directly on file (imported to another file)
-# else:
-#     print('Not the original file')
